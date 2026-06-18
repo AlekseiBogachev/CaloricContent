@@ -1,0 +1,5 @@
+data_dir: ./data/
+models_dir: ./models/
+metrics_dir: ./metrics/
+plots_dir: ./plots/
+

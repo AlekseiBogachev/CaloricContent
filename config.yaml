@@ -1,5 +1,9 @@
+SEED: 42
+
 data_dir: ./data/
 models_dir: ./models/
 metrics_dir: ./metrics/
+logs_dir: ./logs/
 plots_dir: ./plots/
 
+log_level: DEBUG

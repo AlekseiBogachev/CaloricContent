@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+import albumentations as A
 from datasets import Dataset, DatasetDict, Image
 import pandas as pd
 
@@ -111,3 +112,18 @@ def get_dataset(config):
     )
 
     return dataset
+
+
+def get_images_transforms(config):
+    transforms = list()
+    logger.debug("Start building images transfroms from config.")
+
+    for album_params in config.get("albumentations", list()):
+        album_cls = getattr(A, album_params.pop("name"))
+        transforms.append(album_cls(**album_params))
+        logger.debug(f"Add transform: {transforms[-1]}")
+
+    transforms = A.Compose(transforms)
+    logger.info(f"Created transforms for images:\n{transforms}")
+
+    return transforms

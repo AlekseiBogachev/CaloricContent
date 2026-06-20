@@ -7,3 +7,13 @@ logs_dir: ./logs/
 plots_dir: ./plots/
 
 log_level: DEBUG
+
+
+albumentations:
+  - name: Resize
+    height: 256
+    width: 256
+  - name: HorizontalFlip
+    p: 0.5
+  - name: RandomBrightnessContrast
+    p: 0.2

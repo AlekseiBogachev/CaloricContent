@@ -114,6 +114,6 @@ training:
   num_workers: 4
 
   MLFlow:
-    tracking_uri: "file:./mlruns"
+    tracking_uri: "sqlite:///mlflow.db"
     experiment_name: CaloricContent
     run_name: CaloricContent

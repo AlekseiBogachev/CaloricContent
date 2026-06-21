@@ -169,7 +169,7 @@ def run_training(config):
         logger.info(f"Started MLFlow run '{run_name}'")
         logger.info("Start model training.")
 
-        mlflow.log_dict(config, "config.yaml")
+        mlflow.log_dict(config, "config.json")
         logger.debug("MLFLow logged config dict")
 
         trainer.train()

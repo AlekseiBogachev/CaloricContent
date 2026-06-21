@@ -1,10 +1,9 @@
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
-import sys
 
 import transformers
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +17,11 @@ def setup_logging(config, logger_name="main"):
     )
 
     log_level = getattr(logging, config.log_level.upper(), logging.INFO)
-    
+
     ch = logging.StreamHandler(sys.stdout)
     fh = logging.handlers.RotatingFileHandler(
         logs_file_path,
-        maxBytes=10 * 2 ** 20,
+        maxBytes=10 * 2**20,
         backupCount=5,
         mode="w",
         encoding="utf-8",

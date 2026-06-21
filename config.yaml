@@ -97,3 +97,23 @@ albumentations:
 model:
   image_backbone: google/vit-base-patch16-224
   text_backbone: google-bert/bert-base-uncased
+  embed_dim: 768
+  num_heads: 8
+  dropout: 0.1
+  train_n_layers: 2
+  return_dict: True
+
+training:
+  device: cuda
+  batch_size: 32
+  epochs: 100
+  weight_decay: 0.01
+  image_backbone_lr: 1e-5
+  lr: 5e-4
+  warmup_ratio: 0.1
+  num_workers: 4
+
+  MLFlow:
+    tracking_uri: "sqlite:///mlruns.db"
+    experiment_name: CaloricContent
+    run_name: CaloricContent

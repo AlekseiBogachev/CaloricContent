@@ -81,9 +81,11 @@ class CaloricModel(PreTrainedModel):
 
         for param in self.text_encoder.parameters():
             param.requires_grad = False
+        logger.info("Freezed text backbone.")
 
         for param in self.image_encoder.parameters():
             param.requires_grad = False
+        logger.info("Freezed image backbone.")
 
         if config.train_n_layers > 0:
             for param in self.image_encoder.layers[
@@ -92,6 +94,10 @@ class CaloricModel(PreTrainedModel):
                 param.requires_grad = True
             for param in self.image_encoder.layernorm.parameters():
                 param.requires_grad = True
+            logger.info(
+                f"Unfreezed last {config.train_n_layers} layers "
+                "and last layernorm in image backbone."
+            )
 
         self.criterion = torch.nn.L1Loss()
 

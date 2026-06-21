@@ -12,6 +12,7 @@ log_level: INFO
 total_mass:
   mean: 214.980074
   std: 161.497428
+  noise_std: 0.5
 
 
 text_aug:
@@ -109,7 +110,7 @@ training:
   epochs: 100
   weight_decay: 0.01
   image_backbone_lr: 1e-5
-  lr: 5e-4
+  lr: 1e-4
   warmup_ratio: 0.1
   num_workers: 4
 

@@ -139,9 +139,14 @@ def get_images_transforms(config, split="train"):
 def get_total_mass_transform(config):
     mean = config["total_mass"]["mean"]
     std = config["total_mass"]["std"]
+    noise_std = config["total_mass"]["noise_std"]
 
     def standardize(value):
-        return (value - mean) / std
+        if noise_std > 0:
+            noise = np.random.normal(scale=noise_std)
+        else:
+            noise = 0
+        return (value - mean) / std + noise
 
     logger.info(
         "Create standartization for 'total_mass' with "

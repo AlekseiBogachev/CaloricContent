@@ -123,6 +123,7 @@ def run_training(config):
         remove_unused_columns=False,
         eval_strategy="epoch",
         save_strategy="epoch",
+        save_total_limit=5,
         logging_strategy="steps",
         logging_steps=100,
         learning_rate=config["training"]["lr"],

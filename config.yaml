@@ -108,8 +108,8 @@ training:
   batch_size: 32
   epochs: 100
   weight_decay: 0.01
-  image_backbone_lr: 1e-5
-  lr: 5e-4
+  image_backbone_lr: 1e-4
+  lr: 1e-3
   warmup_ratio: 0.1
   num_workers: 4
 

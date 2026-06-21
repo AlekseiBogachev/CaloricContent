@@ -147,7 +147,7 @@ def run_training(config):
 
     time_str = datetime.now().strftime("%Y_%m_%dT%H_%M_%S")
     run_name = f"{run_name}_{time_str}"
-    csv_path = Path(config["models_dir"]).joinpath(
+    csv_path = Path(config["metrics_dir"]).joinpath(
         f"training_logs_{run_name}.csv"
     )
 
@@ -184,7 +184,7 @@ def run_training(config):
         logger.debug(f"MLFlow logged best checkpoint from {best_models_path}")
 
         log_history_df = pd.DataFrame(trainer.state.log_history)
-        log_history_path = Path(config["models_dir"]).joinpath(
+        log_history_path = Path(config["metrics_dir"]).joinpath(
             f"log_history_{run_name}.csv"
         )
         log_history_df.to_csv(
@@ -200,7 +200,7 @@ def run_training(config):
             eval_dataset=test_dataset, metric_key_prefix="test"
         )
         logger.info("Test is finished.")
-        test_results_path = Path(config["models_dir"]).joinpath(
+        test_results_path = Path(config["metrics_dir"]).joinpath(
             f"test_results_{run_name}.csv"
         )
         pd.Series(test_results).to_csv(test_results_path)

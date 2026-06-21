@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+import random
 
 import albumentations as A
 from datasets import Dataset, DatasetDict, Image
@@ -9,9 +10,10 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def get_dataset_dict(config, ingr_separator=", "):
+def get_dataset_dict(config):
     logger.debug(f"Start parsing raw data from {config.data_dir}")
     data_dir = Path(config.data_dir)
+    ingr_separator = config["text_aug"]["ingr_separator"]
 
     dish_df = pd.read_csv(data_dir.joinpath("dish.csv"))
     logger.debug("Read dish.csv")
@@ -114,16 +116,57 @@ def get_dataset(config):
     return dataset
 
 
-def get_images_transforms(config):
+def get_images_transforms(config, split="train"):
     transforms = list()
     logger.debug("Start building images transfroms from config.")
 
-    for album_params in config.get("albumentations", list()):
+    albums = config.get("albumentations", list())
+    if albums:
+        albums = albums.get(split, list())
+    for album_params in albums:
         album_cls = getattr(A, album_params.pop("name"))
         transforms.append(album_cls(**album_params))
         logger.debug(f"Add transform: {transforms[-1]}")
 
-    transforms = A.Compose(transforms)
+    transforms = A.Compose(transforms, seed=config.SEED)
     logger.info(f"Created transforms for images:\n{transforms}")
 
     return transforms
+
+
+def get_total_mass_transform(config):
+    mean = config["total_mass"]["mean"]
+    std = config["total_mass"]["std"]
+
+    def standardize(value):
+        return (value - mean) / std
+
+    return standardize
+
+
+def get_text_transforms(config):
+    ingr_sep = config["text_aug"]["ingr_separator"]
+
+    drop_prob = config["text_aug"]["drop_ingr"]["p"]
+    drop_frac = config["text_aug"]["drop_ingr"]["f_ingr"]
+
+    shuffle_prob = config["text_aug"]["shuffle_ingr"]["p"]
+
+    def transforms(text):
+        items = text.split(ingr_sep)
+
+        if random.random() < drop_prob:
+            random.shuffle(items)
+            n_items = len(items) - int(drop_frac * len(items))
+            items = items[:n_items]
+        elif random.random() < shuffle_prob:
+            random.shuffle(items)
+        else:
+            return text
+
+        return ingr_sep.join(items)
+
+    return transforms
+
+
+

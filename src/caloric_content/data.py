@@ -1,6 +1,6 @@
-from copy import deepcopy
 import logging
 import random
+from copy import deepcopy
 from pathlib import Path
 
 import albumentations as A
@@ -191,7 +191,7 @@ def apply_transforms_to_dataset(
     total_mass_transform = get_total_mass_transform(config)
 
     def transform_fn(examples):
-        transformed = dict(label=examples["label"])
+        transformed = dict(labels=examples["labels"])
         transformed["pixel_values"] = [
             img_transforms(image=np.array(image.convert("RGB")))["image"]
             for image in examples["image"]
@@ -209,7 +209,7 @@ def apply_transforms_to_dataset(
 
         return transformed
 
-    dataset = dataset.rename_column("total_calories", "label")
+    dataset = dataset.rename_column("total_calories", "labels")
     dataset.set_transform(transform_fn)
 
     logger.info(f"Applied transforms for dataset. split={split}")
@@ -219,7 +219,7 @@ def apply_transforms_to_dataset(
 
 def collate_fn(batch, tokenizer):
     labels = torch.tensor(
-        [item["label"] for item in batch], dtype=torch.float32
+        [item["labels"] for item in batch], dtype=torch.float32
     ).unsqueeze(1)
     images = torch.stack([item["pixel_values"] for item in batch])
     texts = [item["text"] for item in batch]
@@ -232,7 +232,7 @@ def collate_fn(batch, tokenizer):
     )
 
     return {
-        "label": labels,
+        "labels": labels,
         "pixel_values": images,
         "numeric": numeric_vals,
         "input_ids": tokenized_text["input_ids"],

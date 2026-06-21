@@ -207,3 +207,11 @@ def run_training(config):
         logger.info(f"Test results is saved to {test_results_path}")
         mlflow.log_artifact(test_results_path)
         logger.debug(f"MLFlow logged test results {test_results_path}")
+
+
+def run_test(config):
+    raise NotImplementedError
+
+
+def run_predict(config):
+    raise NotImplementedError

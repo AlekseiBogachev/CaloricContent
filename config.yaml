@@ -12,7 +12,7 @@ log_level: INFO
 total_mass:
   mean: 214.980074
   std: 161.497428
-  noise_std: 1.0
+  noise_std: 2.0
 
 
 text_aug:
@@ -101,7 +101,7 @@ model:
   embed_dim: 768
   num_heads: 8
   dropout: 0.1
-  train_n_layers: 2
+  train_n_layers: 8
   return_dict: True
 
 training:

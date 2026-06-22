@@ -44,7 +44,7 @@ def predict_cmd(config_dict):
     "--config",
     "-c",
     default="config.yaml",
-    type=click.Path(exists=True, dir_okay=False, readable=True),
+    type=click.Path(exists=True, dir_okay=True, readable=True),
     help="Path to the config.yaml containing project configuration.",
 )
 @click.pass_context

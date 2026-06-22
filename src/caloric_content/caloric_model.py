@@ -71,12 +71,14 @@ class CaloricModel(PreTrainedModel):
         )
 
         self.regressor = torch.nn.Sequential(
-            torch.nn.Linear(config.embed_dim + 1, 256),
+            torch.nn.LayerNorm(config.embed_dim + 1),
+            torch.nn.Linear(config.embed_dim + 1, 512),
             torch.nn.SiLU(),
+            torch.nn.LayerNorm(512),
             torch.nn.Dropout(config.dropout),
-            torch.nn.Linear(256, 64),
+            torch.nn.Linear(512, 128),
             torch.nn.SiLU(),
-            torch.nn.Linear(64, 1),
+            torch.nn.Linear(128, 1),
         )
 
         for param in self.text_encoder.parameters():

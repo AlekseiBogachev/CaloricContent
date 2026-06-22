@@ -1,7 +1,12 @@
 import logging
 
 import torch
-from transformers import AutoModel, PretrainedConfig, PreTrainedModel
+from transformers import (
+    AutoConfig,
+    AutoModel,
+    PretrainedConfig,
+    PreTrainedModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,17 +41,37 @@ class CaloricModel(PreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
 
-        self.image_encoder = AutoModel.from_pretrained(
-            config.image_backbone,
-            add_pooling_layer=False,
-        )
-        logger.info(f"Loaded image backbone {config.image_backbone}")
+        try:
+            self.image_encoder = AutoModel.from_pretrained(
+                config.image_backbone,
+                add_pooling_layer=False,
+            )
+            logger.info(f"Loaded image backbone {config.image_backbone}")
+        except RuntimeError:
+            image_config = AutoConfig.from_pretrained(
+                config.image_backbone,
+                add_pooling_layer=False,
+            )
+            self.image_encoder = AutoModel.from_config(image_config)
+            logger.warning(
+                "Failed to load weights for image backbone, initialized with random weights."
+            )
 
-        self.text_encoder = AutoModel.from_pretrained(
-            config.text_backbone,
-            add_pooling_layer=False,
-        )
-        logger.info(f"Loaded text backbone {config.text_backbone}")
+        try:
+            self.text_encoder = AutoModel.from_pretrained(
+                config.text_backbone,
+                add_pooling_layer=False,
+            )
+            logger.info(f"Loaded text backbone {config.text_backbone}")
+        except RuntimeError:
+            text_config = AutoConfig.from_pretrained(
+                config.text_backbone,
+                add_pooling_layer=False,
+            )
+            self.text_encoder = AutoModel.from_config(text_config)
+            logger.warning(
+                "Failed to load weights for text backbone, initialized with random weights."
+            )
 
         image_embed_size = self.image_encoder.config.hidden_size
         text_embed_size = self.text_encoder.config.hidden_size

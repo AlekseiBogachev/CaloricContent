@@ -25,7 +25,6 @@ def train_cmd(config_dict):
 @click.argument(
     "checkpoint-path",
     type=click.Path(exists=True, dir_okay=False, readable=True),
-    help="Path to the checkpoint for testing.",
 )
 @click.pass_obj
 def test_cmd(config_dict, checkpoint_path):

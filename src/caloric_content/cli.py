@@ -24,7 +24,7 @@ def train_cmd(config_dict):
 @click.command(name="test")
 @click.argument(
     "checkpoint-path",
-    type=click.Path(exists=True, dir_okay=False, readable=True),
+    type=click.Path(exists=True, dir_okay=True, readable=True),
 )
 @click.pass_obj
 def test_cmd(config_dict, checkpoint_path):
@@ -44,7 +44,7 @@ def predict_cmd(config_dict):
     "--config",
     "-c",
     default="config.yaml",
-    type=click.Path(exists=True, dir_okay=True, readable=True),
+    type=click.Path(exists=True, dir_okay=False, readable=True),
     help="Path to the config.yaml containing project configuration.",
 )
 @click.pass_context

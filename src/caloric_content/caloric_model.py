@@ -130,6 +130,7 @@ class CaloricModel(PreTrainedModel):
 
         self.return_dict = config.return_dict
 
+        self.post_init()
         logger.info("Initialized CaloricModel")
 
         return None

@@ -136,12 +136,17 @@ def get_images_transforms(config, split="train"):
     return transforms
 
 
-def get_total_mass_transform(config):
+def get_total_mass_transform(config, split="train"):
     mean = config["total_mass"]["mean"]
     std = config["total_mass"]["std"]
+    noise_std = config["total_mass"]["noise_std"]
 
     def standardize(value):
-        return (value - mean) / std
+        if noise_std > 0 and split == "train":
+            noise = np.random.normal(scale=noise_std)
+        else:
+            noise = 0
+        return (value - mean) / std + noise
 
     logger.info(
         "Create standartization for 'total_mass' with "
@@ -188,7 +193,7 @@ def apply_transforms_to_dataset(
     img_transforms = get_images_transforms(config, split)
     if split == "train":
         text_transforms = get_text_transforms(config)
-    total_mass_transform = get_total_mass_transform(config)
+    total_mass_transform = get_total_mass_transform(config, split=split)
 
     def transform_fn(examples):
         transformed = dict(labels=examples["labels"])

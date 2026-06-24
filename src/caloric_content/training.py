@@ -123,6 +123,7 @@ def run_training(config):
         remove_unused_columns=False,
         eval_strategy="epoch",
         save_strategy="epoch",
+        save_total_limit=5,
         logging_strategy="steps",
         logging_steps=100,
         learning_rate=config["training"]["lr"],
@@ -143,11 +144,9 @@ def run_training(config):
         warmup_ratio=config["training"]["warmup_ratio"],
     )
 
-    # model.to(device)
-
     time_str = datetime.now().strftime("%Y_%m_%dT%H_%M_%S")
     run_name = f"{run_name}_{time_str}"
-    csv_path = Path(config["models_dir"]).joinpath(
+    csv_path = Path(config["metrics_dir"]).joinpath(
         f"training_logs_{run_name}.csv"
     )
 
@@ -169,7 +168,7 @@ def run_training(config):
         logger.info(f"Started MLFlow run '{run_name}'")
         logger.info("Start model training.")
 
-        mlflow.log_dict(config, "config.yaml")
+        mlflow.log_dict(config, "config.json")
         logger.debug("MLFLow logged config dict")
 
         trainer.train()
@@ -184,7 +183,7 @@ def run_training(config):
         logger.debug(f"MLFlow logged best checkpoint from {best_models_path}")
 
         log_history_df = pd.DataFrame(trainer.state.log_history)
-        log_history_path = Path(config["models_dir"]).joinpath(
+        log_history_path = Path(config["metrics_dir"]).joinpath(
             f"log_history_{run_name}.csv"
         )
         log_history_df.to_csv(
@@ -200,17 +199,90 @@ def run_training(config):
             eval_dataset=test_dataset, metric_key_prefix="test"
         )
         logger.info("Test is finished.")
-        test_results_path = Path(config["models_dir"]).joinpath(
-            f"test_results_{run_name}.csv"
+        test_results_path = Path(config["metrics_dir"]).joinpath(
+            f"test_metrics_{run_name}.csv"
         )
         pd.Series(test_results).to_csv(test_results_path)
-        logger.info(f"Test results is saved to {test_results_path}")
+        logger.info(f"Test metrics is saved to {test_results_path}")
         mlflow.log_artifact(test_results_path)
-        logger.debug(f"MLFlow logged test results {test_results_path}")
+        logger.debug(f"MLFlow logged test metrics {test_results_path}")
 
 
-def run_test(config):
-    raise NotImplementedError
+def run_test(config, checkpoint_path):
+    logger.info(f"Start test CaloricModel. checkpoint={checkpoint_path}")
+
+    device = config["training"]["device"]
+    logger.info(f"Selected device is '{device}'")
+    if (device == "cuda") and (not torch.cuda.is_available()):
+        device = "cpu"
+        logger.warning("Cuda is not available. Set device='cpu'.")
+
+    dataset = get_dataset(config)["test"]
+    test_dataset = apply_transforms_to_dataset(dataset, config, split="test")
+
+    model = CaloricModel.from_pretrained(checkpoint_path)
+    logger.debug(f"Loaded CaloricModel from {checkpoint_path}")
+
+    tokenizer = AutoTokenizer.from_pretrained(config["model"]["text_backbone"])
+    logger.info(
+        f"Initialized tokenizer from {config['model']['text_backbone']}"
+    )
+
+    training_args = TrainingArguments(
+        output_dir=config["models_dir"],
+        remove_unused_columns=False,
+        per_device_eval_batch_size=config["training"]["batch_size"],
+        report_to="none",
+        push_to_hub=False,
+        seed=config.SEED,
+        data_seed=config.SEED,
+        dataloader_num_workers=config["training"]["num_workers"],
+        use_cpu=(device == "cpu"),
+    )
+
+    time_str = datetime.now().strftime("%Y_%m_%dT%H_%M_%S")
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        data_collator=partial(collate_fn, tokenizer=tokenizer),
+    )
+    logger.info("Initialized Trainer.")
+
+    test_results = trainer.evaluate(
+        eval_dataset=test_dataset, metric_key_prefix="test"
+    )
+    logger.info("Model tested.")
+    test_results_path = Path(config["metrics_dir"]).joinpath(
+        f"test_metrics_{time_str}.csv"
+    )
+    pd.Series(test_results).to_csv(test_results_path)
+    logger.info(f"Test metrics is saved to {test_results_path}")
+
+    predictions_output = trainer.predict(test_dataset, metric_key_prefix="test")
+    logger.info("Got predictions.")
+
+    preds = predictions_output.predictions.squeeze()
+    labels = predictions_output.label_ids.squeeze()
+
+    errors = np.abs(preds - labels)
+    errors_df = pd.DataFrame(
+        {
+            "idx": range(len(errors)),
+            "true_label": labels.tolist(),
+            "prediction": preds.tolist(),
+            "error": errors.tolist(),
+        }
+    )
+    logger.info("Calculated errors.")
+
+    errors_path = Path(config["metrics_dir"]).joinpath(
+        f"test_errors_{time_str}.csv"
+    )
+    errors_df.sort_values(by="error", ascending=False).to_csv(
+        errors_path, index=False
+    )
+    logger.info(f"Saved errors to {errors_path}")
 
 
 def run_predict(config):

@@ -12,12 +12,13 @@ log_level: INFO
 total_mass:
   mean: 214.980074
   std: 161.497428
+  noise_std: 0.1
 
 
 text_aug:
   ingr_separator: ", "
   drop_ingr:
-    f_ingr: 0.1
+    f_ingr: 0.2
     p: 0.5
   shuffle_ingr:
     p: 0.5
@@ -54,11 +55,11 @@ albumentations:
       fill: 0
       p: 0.8
     - name: CoarseDropout
-      num_holes_range: [2, 8]
+      num_holes_range: [2, 12]
       hole_height_range: [16, 32]
       hole_width_range: [16, 32]
       fill: 0
-      p: 0.5
+      p: 0.75
     - name: ColorJitter
       brightness: 0.2
       contrast: 0.2
@@ -98,9 +99,9 @@ model:
   image_backbone: google/vit-base-patch16-224
   text_backbone: google-bert/bert-base-uncased
   embed_dim: 768
-  num_heads: 8
+  num_heads: 12
   dropout: 0.1
-  train_n_layers: 2
+  train_n_layers: 4
   return_dict: True
 
 training:
@@ -109,11 +110,11 @@ training:
   epochs: 100
   weight_decay: 0.01
   image_backbone_lr: 1e-5
-  lr: 5e-4
+  lr: 1e-4
   warmup_ratio: 0.1
   num_workers: 4
 
   MLFlow:
-    tracking_uri: "file:./mlruns"
+    tracking_uri: "sqlite:///mlflow.db"
     experiment_name: CaloricContent
     run_name: CaloricContent

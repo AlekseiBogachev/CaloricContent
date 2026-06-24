@@ -22,10 +22,14 @@ def train_cmd(config_dict):
 
 
 @click.command(name="test")
+@click.argument(
+    "checkpoint-path",
+    type=click.Path(exists=True, dir_okay=True, readable=True),
+)
 @click.pass_obj
-def test_cmd(config_dict):
+def test_cmd(config_dict, checkpoint_path):
     """Run model evaluation on test set."""
-    run_test(config_dict)
+    run_test(config_dict, checkpoint_path)
 
 
 @click.command(name="predict")
